@@ -3,13 +3,25 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b",
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "npm run build && npm run start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "dependencies": {
+    "authenticator": "^1.1.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
+    "@repo/db": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/authenticator": "^1.1.4",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }
