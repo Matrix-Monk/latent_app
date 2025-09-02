@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/routes/v1/index.ts","./src/routes/v1/user.ts"],"version":"5.9.2"}
+{"root":["./src/config.ts","./src/index.ts","./src/routes/v1/index.ts","./src/routes/v1/user.ts","./src/utils/twilio.ts"],"version":"5.9.2"}
