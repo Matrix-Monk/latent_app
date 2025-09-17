@@ -31,8 +31,10 @@ model Admin{
   id                 String               @id @default(uuid())
   phoneNumber        String               @unique   
   name               String?
+  otpSecret          String?
   verified           Boolean              @default(false)
   createdAt          DateTime             @default(now())
+  adminType          AdminType            
   events             Event[]
 }
 
@@ -41,12 +43,18 @@ model Event{
   id                 String               @id @default(uuid())
   name               String
   description        String
-  banner             String
+  imageUrl           String
+  startTime          DateTime
   createdAt          DateTime             @default(now())
+  published          Boolean              @default(false)
+  ended              Boolean              @default(false)
   AdminId            String
+  locationId         String
   admin              Admin                @relation(fields: [AdminId], references: [id])
+  location           Location             @relation(fields: [locationId], references: [id])
   bookings           Booking[]
   payments           Payment[]
+  seatTypes          SeatType[]
 }
 
 
@@ -56,10 +64,10 @@ model Booking{
   userId             String
   event              Event                @relation(fields: [eventId], references: [id])
   user               User                 @relation(fields: [userId], references: [id])
-  seats              seat[]
+  seats              Seat[]
 }
 
-model seat{
+model Seat{
   id                 String               @id @default(uuid())
   seatTypeId         String
   bookingId          String
@@ -72,11 +80,12 @@ model SeatType{
   id                 String               @id @default(uuid())
   name               String
   description        String
-  eventId            String
   price              Float
   totalSeats         Int
-  availableSeats     Int
-  seats              seat[]
+  availableSeats     Int                  @default(0)
+  seats              Seat[]
+  eventId            String
+  event              Event                @relation(fields: [eventId], references: [id])
 }
 
 model Payment{
@@ -88,9 +97,22 @@ model Payment{
   event              Event                @relation(fields: [eventId], references: [id])
 }
 
+model Location{
+  id                 String               @id @default(uuid())
+  name               String
+  description        String
+  imageUrl           String
+  events             Event[]
+}
 
 enum PaymentState{
   PENDING
   COMPLETED
   FAILED
+}
+
+
+enum AdminType{
+  SUPERADMIN
+  CREATOR
 }

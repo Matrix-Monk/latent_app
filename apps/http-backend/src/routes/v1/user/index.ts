@@ -2,8 +2,8 @@ import { Router } from "express";
 import { generateKey, generateToken, verifyToken } from "authenticator";
 import { prismaClient } from "@repo/db/prismaClient";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../../config";
-import { sendMessage } from "../../utils/twilio";
+import { JWT_PASSWORD } from "../../../config";
+import { sendMessage } from "../../../utils/twilio";
 
 const router: Router = Router();
 
@@ -91,7 +91,7 @@ router.post("/signup/verify", async (req, res) => {
     data: { name, verified: true },
   });
 
-  const token = jwt.sign({ userId: updatedUser.id }, JWT_SECRET, {
+  const token = jwt.sign({ userId: updatedUser.id }, JWT_PASSWORD, {
     expiresIn: "7d",
   });
 
@@ -193,7 +193,7 @@ router.post("/signin/verify", async (req, res) => {
     data: { verified: true },
   });
 
-  const token = jwt.sign({ userId: updatedUser.id }, JWT_SECRET, {
+  const token = jwt.sign({ userId: updatedUser.id }, JWT_PASSWORD, {
     expiresIn: "7d",
   });
 

@@ -1,0 +1,6 @@
+namespace Express{
+    export interface Request {
+        userId?: string;
+        adminId?: string;
+    }
+}
