@@ -34,8 +34,6 @@ router.post("/create-test-superadmin", async (req, res) => {
 
   const token = await createAdmin({ phoneNumber, name, type: "SUPERADMIN" });
 
-  console.log("Generated test superadmin token:", token);
-
   res.status(201).json({
     token,
   });

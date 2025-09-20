@@ -14,7 +14,7 @@ describe("events", () => {
       `${BACKEND_URL}/api/v1/test/create-test-admin`,
       {
         phoneNumber: getRandomNumber(10).toString(),
-        name: "Gopal",
+        name: "gopal",
       }
     );
 
@@ -25,6 +25,7 @@ describe("events", () => {
         name: "Gopal",
       }
     );
+
     token = response.data.token;
     superAdminToken = superAdminResponse.data.token;
 
@@ -42,7 +43,6 @@ describe("events", () => {
         },
       }
     );
-
     const eventResponse = await axios.post(
       `${BACKEND_URL}/api/v1/admin/event`,
       {
@@ -60,7 +60,155 @@ describe("events", () => {
         },
       }
     );
-      
+
     eventId = eventResponse.data.id;
   });
+
+  it("Can add seats for event that does exist", async () => {
+    const response = await axios.put(
+      `${BACKEND_URL}/api/v1/admin/event/seats/${eventId}`,
+      {
+        seats: [
+          {
+            name: "Seat 1",
+            description: "Seat 1 description",
+            price: 100,
+            totalSeats: 10,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    const eventResponse = await axios.get(
+      `${BACKEND_URL}/api/v1/admin/event/${eventId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(eventResponse.status).toBe(200);
+    expect(eventResponse.status).toBe(200);
+    console.log(eventResponse.data);
+    expect(eventResponse.data.event.seatTypes.length).toBe(1);
+  });
+
+  it("Can delete seats for event that does exist", async () => {
+    const response = await axios.put(
+      `${BACKEND_URL}/api/v1/admin/event/seats/${eventId}`,
+      {
+        seats: [],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    const eventResponse = await axios.get(
+      `${BACKEND_URL}/api/v1/admin/event/${eventId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(eventResponse.status).toBe(200);
+    expect(eventResponse.status).toBe(200);
+    console.log(eventResponse.data);
+    expect(eventResponse.data.event.seatTypes.length).toBe(0);
+  });
+
+  it("Can update seats for event that does exist", async (ctx) => {
+
+    const response = await axios.put(
+      `${BACKEND_URL}/api/v1/admin/event/seats/${eventId}`,
+      {
+        seats: [
+          {
+            name: "Seat 1",
+            description: "Seat 1 description",
+            price: 100,
+            totalSeats: 10,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    const eventResponse = await axios.get(
+      `${BACKEND_URL}/api/v1/admin/event/${eventId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    const seatId = eventResponse.data.event.seatTypes[0].id;
+
+    console.log({
+      id: seatId,
+      name: "Seat 2",
+      description: "Seat 1 description",
+      price: 100,
+      totalSeats: 100,
+    });
+    const updateSeatResponse = await axios.put(
+      `${BACKEND_URL}/api/v1/admin/event/seats/${eventId}`,
+      {
+        seats: [
+          {
+            id: seatId,
+            name: "Seat 2",
+            description: "Seat 2 description",
+            price: 1000,
+                totalSeats
+                    : 1000,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    // Write a get request to check if the seat is updated
+    const updatedSeatResponseGet = await axios.get(
+      `${BACKEND_URL}/api/v1/admin/event/${eventId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    console.log("updatedSeatResponseGet.data.event.seatTypes");
+    console.log(updatedSeatResponseGet.data);
+
+    console.log("eventResponse.data.event.seatTypes");
+    console.log(eventResponse.data.event.seatTypes);
+
+    expect(updateSeatResponse.status).toBe(200);
+    expect(response.status).toBe(200);
+    expect(eventResponse.status).toBe(200);
+    expect(eventResponse.data.event.seatTypes.length).toBe(1);
+    expect(updatedSeatResponseGet.data.event.seatTypes[0].name).toBe("Seat 2");
+  }, 15000);
 });

@@ -17,6 +17,15 @@ export const createEventSchema = z.object({
   ),
 });
 
+export const UpdateEventSchema = z.object({
+  name: z.string().min(3).max(100).optional(),
+  description: z.string().min(10).max(500).optional(),
+  startTime: z.string().optional(),
+  imageUrl: z.string().optional(),
+  locationId: z.string().min(5).max(200).optional(),
+  published: z.boolean().optional(),
+  ended: z.boolean().optional(),
+});
 
 export const createLocationSchema = z.object({
     name: z.string().min(3).max(100),
@@ -24,28 +33,10 @@ export const createLocationSchema = z.object({
     imageUrl: z.string(),
 });
 
-
-export const UpdateEventSchema = z.object({
-    name: z.string().min(3).max(100).optional(),
-    description: z.string().min(10).max(500).optional(),
-    startTime: z.string().optional(),
-    imageUrl: z.string().optional(),
-    locationId: z.string().min(5).max(200).optional(),
-    published: z.boolean().optional(),
-    ended: z.boolean().optional(),
-})
-
-export const createSeatsSchema = z.object({
-    name: z.string().min(3).max(100),
-    description: z.string().min(10).max(500),
-    price: z.number(),
-    totalSeats: z.number(),
-})
-
 export const UpdateSeatSchema = z.object({
   seats: z.array(
     z.object({
-      id: z.string().optional(),
+      id: z.string().optional(), 
       name: z.string().min(3).max(100).optional(),
       description: z.string().min(10).max(500).optional(),
       price: z.number().optional(),
@@ -53,3 +44,12 @@ export const UpdateSeatSchema = z.object({
     })
   ),
 });
+
+
+
+// export const createSeatsSchema = z.object({
+//     name: z.string().min(3).max(100),
+//     description: z.string().min(10).max(500),
+//     price: z.number(),
+//     totalSeats: z.number(),
+// })

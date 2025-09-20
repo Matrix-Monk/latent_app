@@ -14,8 +14,6 @@ router.post("/", adminMiddleware, async (req, res) => {
   const { data, success } = createEventSchema.safeParse(req.body);
   const adminId = req.userId;
 
-  console.log(data, success, adminId);
-
   if (!success) {
     res.status(400).json({ message: "Invalid request data", error: data });
     return;
@@ -133,8 +131,8 @@ router.get("/:eventId", adminMiddleware, async (req, res) => {
   res.status(200).json({ event });
 });
 
-router.put("seats/:eventId", adminMiddleware, async (req, res) => {
-  const { data, success } = UpdateSeatSchema.safeParse(req.body);
+router.put("/seats/:eventId", adminMiddleware, async (req, res) => {
+  const { data, success } =  UpdateSeatSchema.safeParse(req.body);
 
   const adminId = req.userId;
 
