@@ -36,7 +36,7 @@ router.post("/signup", async (req, res) => {
     totp = "000000"; // fixed OTP for dev/test
   }
 
-  if (process.env.NODE_ENV == "production") {
+  if (process.env.NODE_ENV === "production") {
     // send OTP to user using SMS gateway
 
     const to = `+91${phoneNumber}`; // for india only right now
@@ -58,7 +58,6 @@ router.post("/signup", async (req, res) => {
 router.post("/signup/verify", async (req, res) => {
   const { phoneNumber, name, totp } = req.body;
 
-  console.log({ phoneNumber, name, totp });
 
   if (!phoneNumber || !totp) {
     res.status(400).json({ message: "phoneNumber and totp are required" });
@@ -159,7 +158,6 @@ router.post("/signin", async (req, res) => {
 router.post("/signin/verify", async (req, res) => {
   const { phoneNumber, totp } = req.body;
 
-  console.log({ phoneNumber, totp });
 
   if (!phoneNumber || !totp) {
     return res
@@ -192,6 +190,7 @@ router.post("/signin/verify", async (req, res) => {
     where: { phoneNumber },
     data: { verified: true },
   });
+
 
   const token = jwt.sign({ userId: updatedUser.id }, JWT_PASSWORD, {
     expiresIn: "7d",

@@ -1,5 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
-import jwt from "jsonwebtoken";
+import { RequestHandler } from "express";
 import { ADMIN_JWT_PASSWORD, SUPERADMIN_JWT_PASSWORD } from "../config";
 import { middleware } from ".";
 

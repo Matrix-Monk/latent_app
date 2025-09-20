@@ -30,7 +30,7 @@ router.post("/", superAdminMiddleware, async (req, res) => {
 });
 
 
-router.get("/locations", async (req, res) => {
+router.get("/", adminMiddleware, async (req, res) => {
     try {
         
         const locations = await prismaClient.location.findMany();

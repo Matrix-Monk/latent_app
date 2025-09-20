@@ -34,3 +34,22 @@ export const UpdateEventSchema = z.object({
     published: z.boolean().optional(),
     ended: z.boolean().optional(),
 })
+
+export const createSeatsSchema = z.object({
+    name: z.string().min(3).max(100),
+    description: z.string().min(10).max(500),
+    price: z.number(),
+    totalSeats: z.number(),
+})
+
+export const UpdateSeatSchema = z.object({
+  seats: z.array(
+    z.object({
+      id: z.string().optional(),
+      name: z.string().min(3).max(100).optional(),
+      description: z.string().min(10).max(500).optional(),
+      price: z.number().optional(),
+      totalSeats: z.number().optional(),
+    })
+  ),
+});

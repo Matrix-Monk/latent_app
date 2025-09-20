@@ -14,7 +14,6 @@ export const middleware =
         }
       }
     }
-    console.log("401");
     res.status(401).json({
       message: "Unauthorized",
     });
@@ -27,16 +26,12 @@ export function verifyToken(
 ): boolean {
   const token = req.headers.authorization;
 
-  console.log("token is " + token);
-  console.log("secret is " + secret);
   if (!token) {
     return false;
   }
 
   try {
     const decoded = jwt.verify(token, secret);
-    console.log("decoded is ");
-    console.log(decoded);
     if (typeof decoded === "string") {
       return false;
     }

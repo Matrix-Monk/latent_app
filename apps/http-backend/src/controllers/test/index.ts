@@ -21,7 +21,7 @@ export async function createAdmin({
   });
 
   const token = jwt.sign(
-    { adminId: admin.id },
+    { userId: admin.id },
     type === "CREATOR" ? ADMIN_JWT_PASSWORD : SUPERADMIN_JWT_PASSWORD,
     {
       expiresIn: "7d",

@@ -2,28 +2,24 @@ import { Router } from "express";
 import { generateKey, generateToken, verifyToken } from "authenticator";
 import { prismaClient } from "@repo/db/prismaClient";
 import jwt from "jsonwebtoken";
-import { ADMIN_JWT_PASSWORD } from "../../../config";
+import { SUPERADMIN_JWT_PASSWORD } from "../../../config";
 import { sendMessage } from "../../../utils/twilio";
 
 const router: Router = Router();
 
 router.post("/signin", async (req, res) => {
-
   const phoneNumber = req.body.phoneNumber;
-
 
   if (!phoneNumber) {
     res.status(400).json({ error: "phoneNumber is required" });
     return;
   }
 
-
   const admin = await prismaClient.admin.findUnique({
     where: {
       phoneNumber: phoneNumber,
     },
   });
-
 
   if (!admin) {
     res.status(404).json({ error: "Admin not found" });
@@ -47,7 +43,7 @@ router.post("/signin", async (req, res) => {
     totp = "000000"; // fixed OTP for dev/test
   }
 
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV == "production") {
     // send OTP to admin using SMS gateway
 
     const to = `+91${phoneNumber}`; // for india only right now
@@ -68,6 +64,8 @@ router.post("/signin", async (req, res) => {
 
 router.post("/signin/verify", async (req, res) => {
   const { phoneNumber, totp } = req.body;
+
+  console.log({ phoneNumber, totp });
 
   if (!phoneNumber || !totp) {
     return res
@@ -101,9 +99,13 @@ router.post("/signin/verify", async (req, res) => {
     data: { verified: true },
   });
 
-  const token = jwt.sign({ adminId: updatedAdmin.id }, ADMIN_JWT_PASSWORD, {
-    expiresIn: "7d",
-  });
+  const token = jwt.sign(
+    { adminId: updatedAdmin.id },
+    SUPERADMIN_JWT_PASSWORD,
+    {
+      expiresIn: "7d",
+    }
+  );
 
   res.status(200).json({
     message: "Admin signed in successfully",

@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import {axios} from "./axios";
+import {axios} from "../tests/axios";
 
 const BACKEND_URL = "http://localhost:8080";
 const PHONE_NO_1 = "1234567890";

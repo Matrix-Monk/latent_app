@@ -1,14 +1,20 @@
 import { Router } from "express";
 import { prismaClient } from "@repo/db/prismaClient";
 import { adminMiddleware } from "../../../middleware/admin";
-import { createEventSchema, UpdateEventSchema } from "@repo/common/types";
+import {
+  createEventSchema,
+  UpdateEventSchema,
+  UpdateSeatSchema,
+} from "@repo/common/types";
 import { getEvent } from "../../../controllers/event";
 
 const router: Router = Router();
 
 router.post("/", adminMiddleware, async (req, res) => {
   const { data, success } = createEventSchema.safeParse(req.body);
-  const adminId = req.adminId;
+  const adminId = req.userId;
+
+  console.log(data, success, adminId);
 
   if (!success) {
     res.status(400).json({ message: "Invalid request data", error: data });
@@ -25,7 +31,7 @@ router.post("/", adminMiddleware, async (req, res) => {
       data: {
         name: data.name,
         description: data.description,
-        startTime: data.startTime,
+        startTime: new Date(data.startTime),
         imageUrl: data.imageUrl,
         locationId: data.locationId,
         AdminId: adminId,
@@ -126,5 +132,109 @@ router.get("/:eventId", adminMiddleware, async (req, res) => {
 
   res.status(200).json({ event });
 });
+
+router.put("seats/:eventId", adminMiddleware, async (req, res) => {
+  const { data, success } = UpdateSeatSchema.safeParse(req.body);
+
+  const adminId = req.userId;
+
+  if (!adminId) {
+    res.status(401).json({ message: "Unauthorized: adminId missing" });
+    return;
+  }
+
+  const eventId = req.params.eventId;
+
+  if (!eventId) {
+    res.status(400).json({ message: "seatId is required" });
+    return;
+  }
+
+  if (!success) {
+    res.status(400).json({ message: "Invalid request data", error: data });
+    return;
+  }
+
+  const event = await prismaClient.event.findUnique({
+    where: {
+      id: eventId,
+      AdminId: adminId,
+    },
+  });
+
+  if (!event || event.startTime > new Date() || event.AdminId !== adminId) {
+    res.status(404).json({
+      message: "Event not found or already started",
+    });
+    return;
+  }
+  try {
+    const currentSeats = await prismaClient.seatType.findMany({
+      where: {eventId}
+    });
+
+    const newSeats = data.seats.filter((x) => !x.id);
+    const updatedSeats = data.seats.filter(
+      (x) =>
+        x.id &&
+        currentSeats.find((y: { id: string | undefined }) => y.id === x.id)
+    );
+    const deletedSeats = currentSeats.filter(
+      (x: { id: string | undefined }) => !data.seats.find((y) => y.id === x.id)
+    );
+
+
+    await prismaClient.$transaction([
+      prismaClient.seatType.deleteMany({
+        where: {
+          id: {
+            in: deletedSeats.map((x: { id: any }) => x.id),
+          },
+        },
+      }),
+      prismaClient.seatType.createMany({
+        data: newSeats
+          .filter(
+            (x) =>
+              x.name !== undefined &&
+              x.description !== undefined &&
+              x.price !== undefined &&
+              x.totalSeats !== undefined
+          )
+          .map((x) => ({
+            name: x.name!,
+            description: x.description!,
+            price: x.price!,
+            totalSeats: x.totalSeats!,
+            eventId,
+          })),
+      }),
+      ...updatedSeats.map((x) =>
+        prismaClient.seatType.update({
+          where: {
+            id: x.id,
+          },
+          data: {
+            name: x.name,
+            description: x.description,
+            price: x.price,
+            totalSeats: x.totalSeats,
+          },
+        })
+      ),
+    ]);
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Could not update seats",
+    });
+    return;
+  }
+  
+  res.json({
+    message: "Seats updated",
+  });
+});
+
 
 export default router;

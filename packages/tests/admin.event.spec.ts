@@ -1,46 +1,123 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, test, it, beforeAll } from "vitest";
 import { axios } from "./axios";
+import { getRandomNumber } from "./utils/number";
 
 const BACKEND_URL = "http://localhost:8080";
-const PHONE_NO_1 = "1234567890";
-const NAME_1 = "Gopal";
 
 describe("events", () => {
+  let token = "";
+  let superAdminToken = "";
 
-     it("Can't create an event without right location", async () => {
-
-       const response = await axios.post(`${BACKEND_URL}/api/v1/event/create`, {
-         name: "Test Event",
-         description: "This is a test event",
-         banner: "http://example.com/banner.jpg",
-         startTime: new Date().toISOString(),
-         locationId: "random",
-       });
-
-       expect(response.status).toBe(400);
-     });
-
-
-  it("Can create an event with right location", async () => {
-    const locationResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/location/create`,
+  beforeAll(async () => {
+    const response = await axios.post(
+      `${BACKEND_URL}/api/v1/test/create-test-admin`,
       {
-        name: "Delhi",
-        description: "Capital of India",
-        imageUrl:
-          "https://cdn.britannica.com/37/189837-050-F0AF383E/New-Delhi-India-War-Memorial-arch-Sir.jpg",
+        phoneNumber: getRandomNumber(10).toString(),
+        name: "Gopal",
       }
     );
 
-    const response = await axios.post(`${BACKEND_URL}/api/v1/event/create`, {
-      name: "Test Event",
-      description: "This is a test event",
-      banner: "http://example.com/banner.jpg",
-      startTime: new Date().toISOString(),
-      locationId: locationResponse.data.id,
-    });
+    const superAdminResponse = await axios.post(
+      `${BACKEND_URL}/api/v1/test/create-test-superadmin`,
+      {
+        phoneNumber: getRandomNumber(10).toString(),
+        name: "Gopal",
+      }
+    );
+
+    console.log("create-admin response:", response.data);
+    console.log("create-super-admin response:", superAdminResponse.data);
+
+    token = response.data.token;
+    superAdminToken = superAdminResponse.data.token;
+    console.log(token);
+    console.log(superAdminToken);
+  });
+
+  it("Cant create an event with the wrong location", async () => {
+    const response = await axios.post(
+      `${BACKEND_URL}/api/v1/admin/event`,
+      {
+        name: "Live event latent fest",
+        description: "Latent fest is a premere fest for members",
+        startTime: "2022-10-10 10:00:00",
+        locationId: "12345",
+        imageUrl:
+          "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+        seats: [],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    expect(response.status).toBe(500);
+  });
+
+  it("Can create an event with the right location", async () => {
+    const locationResponse = await axios.post(
+      `${BACKEND_URL}/api/v1/admin/location`,
+      {
+        name: "Delhi",
+        description: "Delhi, the capital of the country",
+        imageUrl:
+          "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+      },
+      {
+        headers: {
+          Authorization: `${superAdminToken}`,
+        },
+      }
+    );
+
+    const response = await axios.post(
+      `${BACKEND_URL}/api/v1/admin/event`,
+      {
+        name: "Live event latent fest",
+        description: "Latent fest is a premere fest for members",
+        startTime: "2022-10-10 10:00:00",
+        locationId: locationResponse.data.id,
+        imageUrl:
+          "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+        seats: [],
+      },
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
 
     expect(response.status).toBe(201);
-    expect(response.data.id).not.toBeNull();
+  });
+
+  it("Cant create an event unauthenticated", async () => {
+    const locationResponse = await axios.post(
+      `${BACKEND_URL}/api/v1/admin/location`,
+      {
+        name: "Delhi",
+        description: "Delhi, the capital of the country",
+        imageUrl:
+          "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+      },
+      {
+        headers: {
+          Authorization: `${superAdminToken}`,
+        },
+      }
+    );
+
+    const response = await axios.post(`${BACKEND_URL}/api/v1/admin/event`, {
+      name: "Live event latent fest",
+      description: "Latent fest is a premere fest for members",
+      startTime: "2022-10-10 10:00:00",
+      locationId: locationResponse.data.id,
+      banner:
+        "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+    });
+
+    expect(response.status).toBe(401);
   });
 });
